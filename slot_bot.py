@@ -11,7 +11,7 @@ app = Flask("")
 
 @app.route("/")
 def home():
-    return "Slot Machine Bot con Economia e Bombe è attivo!"
+    return "Slot Machine Bot con Economia, Bombe e Reset è attivo!"
 
 
 def run():
@@ -28,7 +28,7 @@ def keep_alive():
 intents = discord.Intents.default()
 intents.message_content = True
 
-# 🌟 METTI QUI IL TUO VERO ID DISCORD AL POSTO DI 1234567890
+# 🌟 RICORDATI DI METTERE IL TUO VERO ID DISCORD AL POSTO DI 1234567890
 bot = commands.Bot(command_prefix="!", owner_id=1496572992426082556, intents=intents)
 
 EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣", "💣"]
@@ -67,7 +67,7 @@ async def monete_giornaliere(ctx):
     )
 
 
-# --- 👑 COMANDO EXCLUSIVE OWNER ---
+# --- 👑 COMANDO OWNER: AGGIUNGI SOLDI ---
 @bot.command(name="add_soldi")
 @commands.is_owner()
 async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
@@ -77,6 +77,17 @@ async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
     portafogli[membro.id] += cifra
     await ctx.send(
         f"👑 **OWNER ACTION:** Aggiunte **{cifra} monete** a {membro.mention}! Nuovo saldo: **{portafogli[membro.id]} monete**."
+    )
+
+
+# --- 👑 NUOVO COMANDO OWNER: RESETTA SOLDI ---
+@bot.command(name="reset_soldi")
+@commands.is_owner()  # <- Solo tu puoi usarlo!
+async def resetta_soldi(ctx, membro: discord.Member):
+    # Riporta il saldo a 100 monete
+    portafogli[membro.id] = 100
+    await ctx.send(
+        f"🧹 **OWNER ACTION:** Il portafoglio di {membro.mention} è stato resettato! Saldo riportato a **100 monete**."
     )
 
 
@@ -121,11 +132,11 @@ async def slot_machine(ctx, scommessa: str = None):
 
     portafogli[user_id] -= cifra
 
-    # Estrazione casuale
+    # Estrazione casuale delle icone
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
     risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
 
-    # --- 💥 CONTROLLO BOMBA CORRETTO (Adesso funziona solo se escono davvero tre bombe) ---
+    # --- 💥 CONTROLLO TRIS DI BOMBE ---
     if riga[0] == "💣" and riga[1] == "💣" and riga[2] == "💣":
         portafogli[user_id] = 0  # Portafoglio azzerato per l'esplosione!
         await ctx.send(
@@ -133,7 +144,7 @@ async def slot_machine(ctx, scommessa: str = None):
         )
         return
 
-    # --- 🏆 CONTROLLO JACKPOT CORRETTO (Adesso funziona solo se sono tutte e tre uguali) ---
+    # --- 🏆 CONTROLLO JACKPOT ---
     if riga[0] == riga[1] == riga[2]:
         vincita = cifra * 10
         portafogli[user_id] += vincita
@@ -167,5 +178,5 @@ if __name__ == "__main__":
         bot.run(token)
     else:
         print(
-            "ERRORE: Non è stata trovata la variabile d'ambiente DISCORD_TOKEN!"
+            "ERRORE: Non è stata trouvata la variabile d'ambiente DISCORD_TOKEN!"
         )
