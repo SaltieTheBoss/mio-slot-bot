@@ -30,7 +30,7 @@ intents.message_content = True
 
 # 🌟 TRUCCO STABILITÀ: Incolla il tuo ID Discord numerico qui sotto al posto di 1234567890
 # Esempio: owner_id=1547277795191816335
-bot = commands.Bot(command_prefix="!", owner_id=1234567890, intents=intents)
+bot = commands.Bot(command_prefix="!", owner_id=1496572992426082556, intents=intents)
 
 EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣"]
 
