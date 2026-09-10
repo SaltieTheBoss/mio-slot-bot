@@ -28,7 +28,7 @@ def keep_alive():
 intents = discord.Intents.default()
 intents.message_content = True
 
-# 🌟 RICORDATI DI METTERE IL TUO VERO ID DISCORD AL POSTO DI 1547277795191816335
+# 🌟 IL TUO ID DISCORD È GIÀ CONFIGURATO PERFETTAMENTE QUI
 bot = commands.Bot(
     command_prefix="!",
     owner_id=1496572992426082556,
@@ -89,7 +89,7 @@ async def monete_giornaliere(ctx):
     )
 
 
-# --- 📊 COMANDO: CLASSIFICA DEI PIÙ RICCHI (TOP 3 CON NOMI VERI) ---
+# --- 📊 COMANDO: CLASSIFICA DEI PIÙ RICCHI (TOP 3) ---
 @bot.command(name="classifica")
 async def mostra_classifica(ctx):
     if not portafogli:
@@ -98,24 +98,18 @@ async def mostra_classifica(ctx):
         )
         return
 
-    # Ordina il dizionario dal più ricco al più povero
     classifica_ordinata = sorted(
         portafogli.items(), key=lambda item: item[1], reverse=True
     )
 
     testo_classifica = "🏆 **TOP 3 DEI PIÙ RICCHI** 🏆\n\n"
-
-    # Medaglie per la Top 3
     medaglie = ["🥇", "🥈", "🥉"]
 
-    # Ciclo sui primi 3 utenti
     for i, (user_id, saldo) in enumerate(classifica_ordinata[:3]):
         try:
-            # 🛠️ SISTEMAZIONE NOMI: Chiediamo a Discord il vero nome dell'utente usando il suo ID
             utente = await bot.fetch_user(user_id)
             nome = utente.display_name
         except Exception:
-            # Se per qualche strano motivo l'utente è introvabile, usiamo un testo di riserva
             nome = f"Utente Sconosciuto ({user_id})"
 
         testo_classifica += f"{medaglie[i]} **{nome}** — {saldo} monete\n"
@@ -147,7 +141,7 @@ async def resetta_soldi(ctx, membro: discord.Member):
     )
 
 
-# --- COMANDO SLOT CORRETTO MATEMATICAMENTE ---
+# --- COMANDO SLOT CON SCOMMESSA E COOLDOWN ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -168,6 +162,12 @@ async def slot_machine(ctx, scommessa: str = None):
         return
 
     cifra = int(scommessa)
+
+    # --- 🤫 NUOVO EASTER EGG SEGRETO: !slot 67 🤫 ---
+    if cifra == 67:
+        await ctx.send(f"🚪 {ctx.author.mention} **GET OUT**")
+        ctx.command.reset_cooldown(ctx)  # Non gli facciamo aspettare i 5 secondi
+        return
 
     if cifra <= 0:
         await ctx.send(
@@ -222,7 +222,7 @@ async def on_command_error(ctx, error):
 
         if ore > 0:
             tempo_testo = f"{ore} ore, {minuti} minuti e {secondi} secondi"
-        elif minutes > 0:
+        elif minuti > 0:
             tempo_testo = f"{minuti} minuti e {secondi} secondi"
         else:
             tempo_testo = f"{secondi:.1f} secondi"
