@@ -28,10 +28,10 @@ def keep_alive():
 intents = discord.Intents.default()
 intents.message_content = True
 
-# 🌟 RICORDATI DI METTERE IL TUO VERO ID DISCORD AL POSTO DI 1234567890
+# 🌟 RICORDATI DI METTERE IL TUO VERO ID DISCORD AL POSTO DI 1547277795191816335
 bot = commands.Bot(
     command_prefix="!",
-    owner_id=1496572992426082556,
+    owner_id=1547277795191816335,
     intents=intents,
     help_command=None,
 )
@@ -47,7 +47,7 @@ async def on_ready():
     print(f"Slot Machine con Economia Online! Acceduto come: {bot.user.name}")
 
 
-# --- 📜 NUOVO COMANDO: MENU DEI COMANDI ---
+# --- 📜 MENU DEI COMANDI ---
 @bot.command(name="menu")
 async def mostra_menu(ctx):
     testo_menu = (
@@ -75,7 +75,7 @@ async def controlla_soldi(ctx):
     )
 
 
-# --- ⏳ COMANDO DAILY AGGIORNATO (Uso limitato a 1 volta ogni 24 ore) ---
+# --- ⏳ COMANDO DAILY (Uso limitato a 1 volta ogni 24 ore) ---
 @bot.command(name="daily")
 @commands.cooldown(1, 86400, commands.BucketType.user)  # 86400 secondi = 24 ore
 async def monete_giornaliere(ctx):
@@ -89,7 +89,7 @@ async def monete_giornaliere(ctx):
     )
 
 
-# --- 📊 NUOVO COMANDO: CLASSIFICA DEI PIÙ RICCHI ---
+# --- 📊 COMANDO: CLASSIFICA DEI PIÙ RICCHI (TOP 3 CON NOMI VERI) ---
 @bot.command(name="classifica")
 async def mostra_classifica(ctx):
     if not portafogli:
@@ -103,24 +103,22 @@ async def mostra_classifica(ctx):
         portafogli.items(), key=lambda item: item[1], reverse=True
     )
 
-    testo_classifica = "🏆 **CLASSIFICA DEI PIÙ RICCHI** 🏆\n\n"
+    testo_classifica = "🏆 **TOP 3 DEI PIÙ RICCHI** 🏆\n\n"
 
-    # Mostra i primi 5 utenti (o meno se ce ne sono meno di 5)
-    for i, (user_id, saldo) in enumerate(classifica_ordinata[:5], start=1):
-        membro = ctx.guild.get_member(user_id)
-        nome = membro.display_name if membro else f"Utente {user_id}"
+    # Medaglie per la Top 3
+    medaglie = ["🥇", "🥈", "🥉"]
 
-        # Assegna delle medaglie speciali ai primi 3 posti
-        if i == 1:
-            medaglia = "🥇"
-        elif i == 2:
-            medaglia = "🥈"
-        elif i == 3:
-            medaglia = "🥉"
-        else:
-            medaglia = f"**#{i}**"
+    # Ciclo sui primi 3 utenti
+    for i, (user_id, saldo) in enumerate(classifica_ordinata[:3]):
+        try:
+            # 🛠️ SISTEMAZIONE NOMI: Chiediamo a Discord il vero nome dell'utente usando il suo ID
+            utente = await bot.fetch_user(user_id)
+            nome = utente.display_name
+        except Exception:
+            # Se per qualche strano motivo l'utente è introvabile, usiamo un testo di riserva
+            nome = f"Utente Sconosciuto ({user_id})"
 
-        testo_classifica += f"{medaglia} **{nome}** — {saldo} monete\n"
+        testo_classifica += f"{medaglie[i]} **{nome}** — {saldo} monete\n"
 
     await ctx.send(testo_classifica)
 
@@ -190,7 +188,7 @@ async def slot_machine(ctx, scommessa: str = None):
 
     portafogli[user_id] -= cifra
 
-    # Estrazione casuale delle icone
+    # Estrazione casuale
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
     risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
 
@@ -217,7 +215,6 @@ async def slot_machine(ctx, scommessa: str = None):
 @bot.event
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandOnCooldown):
-        # Calcoliamo le ore, minuti e secondi rimasti per il cooldown
         secondi_rimasti = int(error.retry_after)
         ore = secondi_rimasti // 3600
         minuti = (secondi_rimasti % 3600) // 60
@@ -225,7 +222,7 @@ async def on_command_error(ctx, error):
 
         if ore > 0:
             tempo_testo = f"{ore} ore, {minuti} minuti e {secondi} secondi"
-        elif minuti > 0:
+        elif minutes > 0:
             tempo_testo = f"{minuti} minuti e {secondi} secondi"
         else:
             tempo_testo = f"{secondi:.1f} secondi"
