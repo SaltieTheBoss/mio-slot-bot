@@ -11,7 +11,7 @@ app = Flask("")
 
 @app.route("/")
 def home():
-    return "Slot Machine Bot con Economia è attivo!"
+    return "Slot Machine Bot con Economia e Bombe è attivo!"
 
 
 def run():
@@ -28,11 +28,11 @@ def keep_alive():
 intents = discord.Intents.default()
 intents.message_content = True
 
-# 🌟 TRUCCO STABILITÀ: Incolla il tuo ID Discord numerico qui sotto al posto di 1234567890
-# Esempio: owner_id=1547277795191816335
-bot = commands.Bot(command_prefix="!", owner_id=1496572992426082556, intents=intents)
+# 🌟 RICORDATI DI SOSTITUIRE 1234567890 CON IL TUO VERO ID DISCORD COPIATO PRIMA
+bot = commands.Bot(command_prefix="!", owner_id=1234567890, intents=intents)
 
-EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣"]
+# AGGIUNTA LA BOMBA ALLA LISTA DEI SIMBOLI 💣
+EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣", "💣"]
 
 # Dizionario per salvare i soldi degli utenti nella RAM
 portafogli = {}
@@ -81,7 +81,7 @@ async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
     )
 
 
-# --- COMANDO SLOT CORRETTO ---
+# --- COMANDO SLOT AGGIORNATO CON L'EASTER EGG DELLA BOMBA ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -122,13 +122,20 @@ async def slot_machine(ctx, scommessa: str = None):
 
     portafogli[user_id] -= cifra
 
+    # Estrazione casuale delle emoji
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
+    risultato_visivo = f"**[ {riga} | {riga} | {riga} ]**"
 
-    # Manteniamo la tua grafica originale pulita che mostra solo i 3 simboli
-    risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
+    # --- 💥 CONTROLLO CASO SPECIALE: 3 BOMBE ESPLOSIVE 💥 ---
+    if riga == "💣" and riga == "💣" and riga == "💣":
+        portafogli[user_id] = 0  # Portafoglio azzerato per l'esplosione!
+        await ctx.send(
+            f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso, forse è meglio cosi🤔?\n📉 Il tuo portafoglio è stato ridotto a **0 monete**!"
+        )
+        return
 
-    # Controllo Jackpot matematicamente perfetto
-    if riga[0] == riga[1] == riga[2]:
+    # --- CONTROLLO JACKPOT REGOLARE ---
+    if riga == riga == riga:
         vincita = cifra * 10
         portafogli[user_id] += vincita
         messaggio = f"🎉 {ctx.author.mention} HA VINTO IL JACKPOT! 🎉\n{risultato_visivo}\n💰 Hai vinto **{vincita} monete**! Nuovo saldo: **{portafogli[user_id]}**."
