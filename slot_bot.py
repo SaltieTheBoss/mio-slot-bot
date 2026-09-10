@@ -121,9 +121,10 @@ async def slot_machine(ctx, scommessa: str = None):
     portafogli[user_id] -= cifra
 
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
-    risultato_visivo = f"**[ {riga} | {riga} | {riga} ]**"
+    risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
 
-    if riga == riga == riga:
+    # --- 🛠️ CORREZIONE CONTROLLO VITTORIA (Adesso funziona davvero al 2.78%) ---
+    if riga[0] == riga[1] == riga[2]:
         vincita = cifra * 10
         portafogli[user_id] += vincita
         messaggio = f"🎉 {ctx.author.mention} HA VINTO IL JACKPOT! 🎉\n{risultato_visivo}\n💰 Hai vinto **{vincita} monete**! Nuovo saldo: **{portafogli[user_id]}**."
