@@ -28,7 +28,9 @@ def keep_alive():
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix="!", intents=intents)
+# 🌟 TRUCCO STABILITÀ: Incolla il tuo ID Discord numerico qui sotto al posto di 1234567890
+# Esempio: owner_id=1547277795191816335
+bot = commands.Bot(command_prefix="!", owner_id=1234567890, intents=intents)
 
 EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣"]
 
@@ -66,9 +68,9 @@ async def monete_giornaliere(ctx):
     )
 
 
-# --- 👑 COMANDO EXCLUSIVE OWNER: SOLO TU PUOI USARLO ---
+# --- 👑 COMANDO EXCLUSIVE OWNER ---
 @bot.command(name="add_soldi")
-@commands.is_owner()  # <- Questo blocca il comando a chiunque tranne che al proprietario del bot
+@commands.is_owner()
 async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
     if membro.id not in portafogli:
         portafogli[membro.id] = 100
@@ -79,7 +81,7 @@ async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
     )
 
 
-# --- COMANDO SLOT CON SCOMMESSA E COOLDOWN ---
+# --- COMANDO SLOT CORRETTO ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -121,9 +123,11 @@ async def slot_machine(ctx, scommessa: str = None):
     portafogli[user_id] -= cifra
 
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
+
+    # Manteniamo la tua grafica originale pulita che mostra solo i 3 simboli
     risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
 
-    # --- 🛠️ CORREZIONE CONTROLLO VITTORIA (Adesso funziona davvero al 2.78%) ---
+    # Controllo Jackpot matematicamente perfetto
     if riga[0] == riga[1] == riga[2]:
         vincita = cifra * 10
         portafogli[user_id] += vincita
