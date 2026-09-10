@@ -29,7 +29,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 # 🌟 RICORDATI DI SOSTITUIRE 1234567890 CON IL TUO VERO ID DISCORD COPIATO PRIMA
-bot = commands.Bot(command_prefix="!", owner_id=1234567890, intents=intents)
+bot = commands.Bot(command_prefix="!", owner_id=1496572992426082556, intents=intents)
 
 # AGGIUNTA LA BOMBA ALLA LISTA DEI SIMBOLI 💣
 EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣", "💣"]
