@@ -38,8 +38,8 @@ EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣"]
 async def on_ready():
     print(f"Slot Machine Online! Acceduto come: {bot.user.name}")
 
-
 @bot.command(name="slot")
+@commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx):
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
     risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
