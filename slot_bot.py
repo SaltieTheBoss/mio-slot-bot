@@ -28,10 +28,9 @@ def keep_alive():
 intents = discord.Intents.default()
 intents.message_content = True
 
-# 🌟 RICORDATI DI SOSTITUIRE 1234567890 CON IL TUO VERO ID DISCORD COPIATO PRIMA
+# 🌟 METTI QUI IL TUO VERO ID DISCORD AL POSTO DI 1234567890
 bot = commands.Bot(command_prefix="!", owner_id=1496572992426082556, intents=intents)
 
-# AGGIUNTA LA BOMBA ALLA LISTA DEI SIMBOLI 💣
 EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣", "💣"]
 
 # Dizionario per salvare i soldi degli utenti nella RAM
@@ -81,7 +80,7 @@ async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
     )
 
 
-# --- COMANDO SLOT AGGIORNATO CON L'EASTER EGG DELLA BOMBA ---
+# --- COMANDO SLOT CORRETTO MATEMATICAMENTE ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -122,20 +121,20 @@ async def slot_machine(ctx, scommessa: str = None):
 
     portafogli[user_id] -= cifra
 
-    # Estrazione casuale delle emoji
+    # Estrazione casuale
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
-    risultato_visivo = f"**[ {riga} | {riga} | {riga} ]**"
+    risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
 
-    # --- 💥 CONTROLLO CASO SPECIALE: 3 BOMBE ESPLOSIVE 💥 ---
-    if riga == "💣" and riga == "💣" and riga == "💣":
+    # --- 💥 CONTROLLO BOMBA CORRETTO (Adesso funziona solo se escono davvero tre bombe) ---
+    if riga[0] == "💣" and riga[1] == "💣" and riga[2] == "💣":
         portafogli[user_id] = 0  # Portafoglio azzerato per l'esplosione!
         await ctx.send(
             f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso, forse è meglio cosi🤔?\n📉 Il tuo portafoglio è stato ridotto a **0 monete**!"
         )
         return
 
-    # --- CONTROLLO JACKPOT REGOLARE ---
-    if riga == riga == riga:
+    # --- 🏆 CONTROLLO JACKPOT CORRETTO (Adesso funziona solo se sono tutte e tre uguali) ---
+    if riga[0] == riga[1] == riga[2]:
         vincita = cifra * 10
         portafogli[user_id] += vincita
         messaggio = f"🎉 {ctx.author.mention} HA VINTO IL JACKPOT! 🎉\n{risultato_visivo}\n💰 Hai vinto **{vincita} monete**! Nuovo saldo: **{portafogli[user_id]}**."
