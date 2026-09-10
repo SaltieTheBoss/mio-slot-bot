@@ -31,7 +31,7 @@ intents.message_content = True
 # 🌟 RICORDATI DI METTERE IL TUO VERO ID DISCORD AL POSTO DI 1547277795191816335
 bot = commands.Bot(
     command_prefix="!",
-    owner_id=1547277795191816335,
+    owner_id=1496572992426082556,
     intents=intents,
     help_command=None,
 )
