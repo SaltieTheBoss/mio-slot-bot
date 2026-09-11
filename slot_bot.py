@@ -169,7 +169,9 @@ async def coin_flip(ctx, scelta: str = None, scommessa: str = None):
 async def rock_paper_scissors(ctx, scelta: str = None, scommessa: str = None):
     user_id = ctx.author.id
     if scelta is None or scommessa is None:
-        await ctx.send(f"❌ Uso corretto: `!rps [sasso/carta/forbice] [scommessa]`")
+        await ctx.send(
+            f"❌ Uso corretto: `!rps [sasso/carta/forbice] [scommessa]`"
+        )
         ctx.command.reset_cooldown(ctx)
         return
     scelta = scelta.lower()
@@ -223,7 +225,6 @@ async def slot_machine(ctx, scommessa: str = None):
         return
     portafogli[user_id] = portafogli.get(user_id, 100) - cifra
 
-    # Estrazione a 3 variabili separate (NIENTE BUG 100% VINCITA)
     s1 = random.choice(EMOJI_SLOT)
     s2 = random.choice(EMOJI_SLOT)
     s3 = random.choice(EMOJI_SLOT)
@@ -258,7 +259,7 @@ async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
 
 @bot.command(name="reset_soldi")
 @commands.is_owner()
-async def resetta_soldi(ctx, membro: discord.Member):
+async def resettare_soldi(ctx, membro: discord.Member):
     portafogli[membro.id] = 100
     await ctx.send(f"🧹 **OWNER:** Il portafoglio di {membro.mention} è a 100.")
 
