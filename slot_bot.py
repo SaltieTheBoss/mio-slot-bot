@@ -31,7 +31,7 @@ intents.message_content = True
 # 🌟 IL TUO ID DISCORD È GIÀ CONFIGURATO PERFETTAMENTE QUI
 bot = commands.Bot(
     command_prefix="!",
-    owner_id=1496572992426082556,
+    owner_id=1547277795191816335,
     intents=intents,
     help_command=None,
 )
@@ -90,7 +90,7 @@ async def monete_giornaliere(ctx):
     )
 
 
-# --- 💼 NUOVO COMANDO: LAVORA (Con cooldown di 30 minuti e 1% colpaccio) ---
+# --- 💼 COMANDO: LAVORA (Con cooldown di 30 minuti e 1% colpaccio) ---
 @bot.command(name="lavora")
 @commands.cooldown(1, 1800, commands.BucketType.user)  # 1800 secondi = 30 minuti
 async def lavora_per_monete(ctx):
@@ -125,7 +125,7 @@ async def mostra_classifica(ctx):
         return
 
     classifica_ordinata = sorted(
-        portafogli.items(), key=lambda item: item, reverse=True
+        portafogli.items(), key=lambda item: item[1], reverse=True
     )
 
     testo_classifica = "🏆 **TOP 3 DEI PIÙ RICCHI** 🏆\n\n"
@@ -167,7 +167,7 @@ async def resetta_soldi(ctx, membro: discord.Member):
     )
 
 
-# --- COMANDO SLOT CON SCOMMESSA E COOLDOWN ---
+# --- COMANDO SLOT CORRETTO MATEMATICAMENTE ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -216,18 +216,18 @@ async def slot_machine(ctx, scommessa: str = None):
 
     # Estrazione casuale delle icone
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
-    risultato_visivo = f"**[ {riga} | {riga} | {riga} ]**"
+    risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
 
-    # --- 💥 CONTROLLO TRIS DI BOMBE ---
-    if riga == "💣" and riga == "💣" and riga == "💣":
+    # --- 💥 CONTROLLO TRIS DI BOMBE CORRETTO ---
+    if riga[0] == "💣" and riga[1] == "💣" and riga[2] == "💣":
         portafogli[user_id] = 0
         await ctx.send(
             f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso, forse è meglio cosi🤔?\n📉 Il tuo portafoglio è stato ridotto a **0 monete**!"
         )
         return
 
-    # --- 🏆 CONTROLLO JACKPOT ---
-    if riga == riga == riga:
+    # --- 🏆 CONTROLLO JACKPOT CORRETTO (Adesso funziona solo se sono tutte e tre uguali) ---
+    if riga[0] == riga[1] == riga[2]:
         vincita = cifra * 10
         portafogli[user_id] += vincita
         messaggio = f"🎉 {ctx.author.mention} HA VINTO IL JACKPOT! 🎉\n{risultato_visivo}\n💰 Hai vinto **{vincita} monete**! Nuovo saldo: **{portafogli[user_id]}**."
