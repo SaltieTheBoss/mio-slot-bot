@@ -11,7 +11,7 @@ app = Flask("")
 
 @app.route("/")
 def home():
-    return "Slot Machine Bot con Economia Completa è attivo!"
+    return "Slot Machine Bot con Economia Completa e Lavoro è attivo!"
 
 
 def run():
@@ -47,7 +47,7 @@ async def on_ready():
     print(f"Slot Machine con Economia Online! Acceduto come: {bot.user.name}")
 
 
-# --- 📜 MENU DEI COMANDI ---
+# --- 📜 MENU DEI COMANDI AGGIORNATO ---
 @bot.command(name="menu")
 async def mostra_menu(ctx):
     testo_menu = (
@@ -56,6 +56,7 @@ async def mostra_menu(ctx):
         "• `!menu` - Mostra questa lista di comandi.\n"
         "• `!soldi` - Controlla quante monete hai nel portafoglio.\n"
         "• `!daily` - Riscatta 50 monete gratis (una volta al giorno).\n"
+        "• `!lavora` - Lavora per avere 100 monete (1% di chance di riceverne 10.000!).\n"
         "• `!slot [cifra]` - Gioca alla slot machine (es: `!slot 10`).\n"
         "• `!classifica` - Mostra la classifica dei più ricchi del server.\n\n"
         "👑 *I comandi da Amministratore (!add_soldi, !reset_soldi) sono nascosti e utilizzabili solo dall'Owner.*"
@@ -89,6 +90,31 @@ async def monete_giornaliere(ctx):
     )
 
 
+# --- 💼 NUOVO COMANDO: LAVORA (Con cooldown di 30 minuti e 1% colpaccio) ---
+@bot.command(name="lavora")
+@commands.cooldown(1, 1800, commands.BucketType.user)  # 1800 secondi = 30 minuti
+async def lavora_per_monete(ctx):
+    user_id = ctx.author.id
+    if user_id not in portafogli:
+        portafogli[user_id] = 100
+
+    # Calcolo probabilità: estrae un numero casuale tra 1 e 100
+    chance = random.randint(1, 100)
+
+    if chance == 77:  # 1% di probabilità (se esce esattamente il numero 77)
+        guadagno = 10000
+        portafogli[user_id] += guadagno
+        await ctx.send(
+            f"🍀 {ctx.author.mention} **COLPACCIO ASSURDO!** Hai lavorato così bene che il capo ti ha dato un bonus incredibile di **10.000 monete**!!! 💰 Nuovo saldo: **{portafogli[user_id]} monete**."
+        )
+    else:  # 99% di probabilità di prendere la paga normale
+        guadagno = 100
+        portafogli[user_id] += guadagno
+        await ctx.send(
+            f"💼 {ctx.author.mention}, hai finito il tuo turno di lavoro! Hai guadagnato **100 monete**. Nuovo saldo: **{portafogli[user_id]} monete**."
+        )
+
+
 # --- 📊 COMANDO: CLASSIFICA DEI PIÙ RICCHI (TOP 3) ---
 @bot.command(name="classifica")
 async def mostra_classifica(ctx):
@@ -99,7 +125,7 @@ async def mostra_classifica(ctx):
         return
 
     classifica_ordinata = sorted(
-        portafogli.items(), key=lambda item: item[1], reverse=True
+        portafogli.items(), key=lambda item: item, reverse=True
     )
 
     testo_classifica = "🏆 **TOP 3 DEI PIÙ RICCHI** 🏆\n\n"
@@ -163,10 +189,10 @@ async def slot_machine(ctx, scommessa: str = None):
 
     cifra = int(scommessa)
 
-    # --- 🤫 NUOVO EASTER EGG SEGRETO: !slot 67 🤫 ---
+    # --- 🤫 EASTER EGG SEGRETO: !slot 67 🤫 ---
     if cifra == 67:
         await ctx.send(f"🚪 {ctx.author.mention} **GET OUT**")
-        ctx.command.reset_cooldown(ctx)  # Non gli facciamo aspettare i 5 secondi
+        ctx.command.reset_cooldown(ctx)
         return
 
     if cifra <= 0:
@@ -188,12 +214,12 @@ async def slot_machine(ctx, scommessa: str = None):
 
     portafogli[user_id] -= cifra
 
-    # Estrazione casuale
+    # Estrazione casuale delle icone
     riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
-    risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
+    risultato_visivo = f"**[ {riga} | {riga} | {riga} ]**"
 
     # --- 💥 CONTROLLO TRIS DI BOMBE ---
-    if riga[0] == "💣" and riga[1] == "💣" and riga[2] == "💣":
+    if riga == "💣" and riga == "💣" and riga == "💣":
         portafogli[user_id] = 0
         await ctx.send(
             f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso, forse è meglio cosi🤔?\n📉 Il tuo portafoglio è stato ridotto a **0 monete**!"
@@ -201,7 +227,7 @@ async def slot_machine(ctx, scommessa: str = None):
         return
 
     # --- 🏆 CONTROLLO JACKPOT ---
-    if riga[0] == riga[1] == riga[2]:
+    if riga == riga == riga:
         vincita = cifra * 10
         portafogli[user_id] += vincita
         messaggio = f"🎉 {ctx.author.mention} HA VINTO IL JACKPOT! 🎉\n{risultato_visivo}\n💰 Hai vinto **{vincita} monete**! Nuovo saldo: **{portafogli[user_id]}**."
