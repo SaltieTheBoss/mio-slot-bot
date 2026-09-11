@@ -11,7 +11,7 @@ app = Flask("")
 
 @app.route("/")
 def home():
-    return "Slot Machine Bot con Economia Completa e Lavoro è attivo!"
+    return "Slot Machine Bot con Economia e Nuovi Giochi è attivo!"
 
 
 def run():
@@ -28,7 +28,7 @@ def keep_alive():
 intents = discord.Intents.default()
 intents.message_content = True
 
-# 🌟 IL TUO ID DISCORD È GIÀ CONFIGURATO PERFETTAMENTE QUI
+# 👑 IL TUO OWNER ID È STATO CONFIGURATO QUI PERFETTAMENTE
 bot = commands.Bot(
     command_prefix="!",
     owner_id=1496572992426082556,
@@ -47,19 +47,22 @@ async def on_ready():
     print(f"Slot Machine con Economia Online! Acceduto come: {bot.user.name}")
 
 
-# --- 📜 MENU DEI COMANDI AGGIORNATO ---
+# --- 📜 MENU DEI COMANDI AGGIORNATO CON I NUOVI GIOCHI ---
 @bot.command(name="menu")
 async def mostra_menu(ctx):
     testo_menu = (
-        "🎰 **MENU COMANDI SLOT MACHINE** 🎰\n\n"
-        "🔴 **Comandi per tutti i giocatori:**\n"
+        "🎰 **MENU COMANDI CASINÒ ARCADE** 🎰\n\n"
+        "🔴 **Comandi generali ed Economia:**\n"
         "• `!menu` - Mostra questa lista di comandi.\n"
         "• `!soldi` - Controlla quante monete hai nel portafoglio.\n"
         "• `!daily` - Riscatta 50 monete gratis (una volta al giorno).\n"
-        "• `!lavora` - Lavora per avere 100 monete (1% di chance di riceverne 10.000!).\n"
+        "• `!lavora` - Fai un turno di lavoro per avere 100 monete (1% di chance di riceverne 10.000!).\n"
+        "• `!classifica` - Mostra la Top 3 dei più ricchi del server.\n\n"
+        "🎮 **Minigiochi d'Azzardo:**\n"
         "• `!slot [cifra]` - Gioca alla slot machine (es: `!slot 10`).\n"
-        "• `!classifica` - Mostra la classifica dei più ricchi del server.\n\n"
-        "👑 *I comandi da Amministratore (!add_soldi, !reset_soldi) sono nascosti e utilizzabili solo dall'Owner.*"
+        "• `!coinflip [testa/croce] [cifra]` - Testa o croce (es: `!coinflip testa 20`).\n"
+        "• `!rps [sasso/carta/forbice] [cifra]` - Carta, Forbice o Sasso (es: `!rps sasso 15`).\n\n"
+        "👑 *I comandi amministrativi dell'Owner sono nascosti.*"
     )
     await ctx.send(testo_menu)
 
@@ -78,7 +81,7 @@ async def controlla_soldi(ctx):
 
 # --- ⏳ COMANDO DAILY (Uso limitato a 1 volta ogni 24 ore) ---
 @bot.command(name="daily")
-@commands.cooldown(1, 86400, commands.BucketType.user)  # 86400 secondi = 24 ore
+@commands.cooldown(1, 86400, commands.BucketType.user)
 async def monete_giornaliere(ctx):
     user_id = ctx.author.id
     if user_id not in portafogli:
@@ -92,22 +95,21 @@ async def monete_giornaliere(ctx):
 
 # --- 💼 COMANDO: LAVORA (Con cooldown di 30 minuti e 1% colpaccio) ---
 @bot.command(name="lavora")
-@commands.cooldown(1, 1800, commands.BucketType.user)  # 1800 secondi = 30 minuti
+@commands.cooldown(1, 1800, commands.BucketType.user)
 async def lavora_per_monete(ctx):
     user_id = ctx.author.id
     if user_id not in portafogli:
         portafogli[user_id] = 100
 
-    # Calcolo probabilità: estrae un numero casuale tra 1 e 100
     chance = random.randint(1, 100)
 
-    if chance == 77:  # 1% di probabilità (se esce esattamente il numero 77)
+    if chance == 77:
         guadagno = 10000
         portafogli[user_id] += guadagno
         await ctx.send(
             f"🍀 {ctx.author.mention} **COLPACCIO ASSURDO!** Hai lavorato così bene che il capo ti ha dato un bonus incredibile di **10.000 monete**!!! 💰 Nuovo saldo: **{portafogli[user_id]} monete**."
         )
-    else:  # 99% di probabilità di prendere la paga normale
+    else:
         guadagno = 100
         portafogli[user_id] += guadagno
         await ctx.send(
@@ -125,7 +127,7 @@ async def mostra_classifica(ctx):
         return
 
     classifica_ordinata = sorted(
-        portafogli.items(), key=lambda item: item[1], reverse=True
+        portafogli.items(), key=lambda item: item, reverse=True
     )
 
     testo_classifica = "🏆 **TOP 3 DEI PIÙ RICCHI** 🏆\n\n"
@@ -143,31 +145,148 @@ async def mostra_classifica(ctx):
     await ctx.send(testo_classifica)
 
 
-# --- 👑 COMANDO OWNER: AGGIUNGI SOLDI ---
-@bot.command(name="add_soldi")
-@commands.is_owner()
-async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
-    if membro.id not in portafogli:
-        portafogli[membro.id] = 100
+# --- 🪙 NUOVO MINIGIOCO: TESTA O CROCE ---
+@bot.command(name="coinflip")
+@commands.cooldown(1, 3, commands.BucketType.user)
+async def coin_flip(ctx, scelta: str = None, scommessa: str = None):
+    user_id = ctx.author.id
 
-    membro_id = membro.id
-    portafogli[membro_id] += cifra
-    await ctx.send(
-        f"👑 **OWNER ACTION:** Aggiunte **{cifra} monete** a {membro.mention}! Nuovo saldo: **{portafogli[membro_id]} monete**."
-    )
+    if scelta is None or scommessa is None:
+        await ctx.send(
+            f"❌ {ctx.author.mention}, uso corretto: `!coinflip [testa/croce] [scommessa]` (es: `!coinflip testa 20`)"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    scelta = scelta.lower()
+    if scelta not in ["testa", "croce"]:
+        await ctx.send(
+            f"❌ {ctx.author.mention}, devi scegliere tra `testa` o `croce`!"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    if not scommessa.isdigit():
+        await ctx.send(
+            f"❌ {ctx.author.mention}, inserisci una scommessa valida!"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    cifra = int(scommessa)
+    if cifra <= 0:
+        await ctx.send(
+            f"❌ {ctx.author.mention}, devi scommettere almeno 1 moneta!"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    if user_id not in portafogli:
+        portafogli[user_id] = 100
+
+    if portafogli[user_id] < cifra:
+        await ctx.send(
+            f"🚫 {ctx.author.mention}, non hai abbastanza monete! Saldo: **{portafogli[user_id]}**."
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    portafogli[user_id] -= cifra
+    risultato = random.choice(["testa", "croce"])
+    emoji_moneta = "🪙"
+
+    if scelta == risultato:
+        vincita = cifra * 2
+        portafogli[user_id] += vincita
+        await ctx.send(
+            f"{emoji_moneta} **COINFLIP:** È uscito **{risultato.upper()}**!\n🎉 Grande {ctx.author.mention}, hai indovinato e raddoppiato! Guadagnate **{cifra} monete**. Saldo: **{portafogli[user_id]}**."
+        )
+    else:
+        await ctx.send(
+            f"{emoji_moneta} **COINFLIP:** È uscito **{risultato.upper()}**!\n❌ Mi dispiace {ctx.author.mention}, hai perso **{cifra} monete**. Saldo: **{portafogli[user_id]}**."
+        )
 
 
-# --- 👑 COMANDO OWNER: RESETTA SOLDI ---
-@bot.command(name="reset_soldi")
-@commands.is_owner()
-async def resetta_soldi(ctx, membro: discord.Member):
-    portafogli[membro.id] = 100
-    await ctx.send(
-        f"🧹 **OWNER ACTION:** Il portafoglio di {membro.mention} è stato resettato! Saldo riportato a **100 monete**."
-    )
+# --- 🪨 NUOVO MINIGIOCO: CARTA FORBICE SASSO ---
+@bot.command(name="rps")
+@commands.cooldown(1, 3, commands.BucketType.user)
+async def rock_paper_scissors(ctx, scelta: str = None, scommessa: str = None):
+    user_id = ctx.author.id
+
+    if scelta is None or scommessa is None:
+        await ctx.send(
+            f"❌ {ctx.author.mention}, uso corretto: `!rps [sasso/carta/forbice] [scommessa]`"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    scelta = scelta.lower()
+    # Supportiamo anche i plurali per evitare errori degli utenti
+    if scelta in ["forbice", "forbici"]:
+        scelta = "forbice"
+
+    if scelta not in ["sasso", "carta", "forbice"]:
+        await ctx.send(
+            f"❌ {ctx.author.mention}, scegli tra `sasso`, `carta` o `forbice`!"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    if not scommessa.isdigit():
+        await ctx.send(
+            f"❌ {ctx.author.mention}, inserisci una scommessa valida!"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    cifra = int(scommessa)
+    if cifra <= 0:
+        await ctx.send(
+            f"❌ {ctx.author.mention}, devi scommettere almeno 1 moneta!"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    if user_id not in portafogli:
+        portafogli[user_id] = 100
+
+    if portafogli[user_id] < cifra:
+        await ctx.send(
+            f"🚫 {ctx.author.mention}, non hai abbastanza monete! Saldo: **{portafogli[user_id]}**."
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    portafogli[user_id] -= cifra
+
+    mosse = ["sasso", "carta", "forbice"]
+    emojis = {"sasso": "🪨 Sasso", "carta": "📄 Carta", "forbice": "✂️ Forbice"}
+    mossa_bot = random.choice(mosse)
+
+    testo_base = f"Tu: **{emojis[scelta]}** VS Bot: **{emojis[mossa_bot]}**\n"
+
+    if scelta == mossa_bot:  # Pareggio
+        portafogli[user_id] += cifra  # Restituisce i soldi scommessi
+        await ctx.send(
+            f"{testo_base}🤝 **PAREGGIO!** Le monete ti sono state restituite. Saldo: **{portafogli[user_id]}**."
+        )
+    elif (
+        (scelta == "sasso" and mossa_bot == "forbice")
+        or (scelta == "carta" and mossa_bot == "sasso")
+        or (scelta == "forbice" and mossa_bot == "carta")
+    ):  # Vittoria giocatore
+        vincita = cifra * 2
+        portafogli[user_id] += vincita
+        await ctx.send(
+            f"{testo_base}🎉 **HAI VINTO!** Hai raddoppiato la tua puntata guadagnando **{cifra} monete**! Saldo: **{portafogli[user_id]}**."
+        )
+    else:  # Sconfitta giocatore
+        await ctx.send(
+            f"{testo_base}❌ **HAI PERSO!** Il bot ti ha battuto. Hai perso **{cifra} monete**. Saldo: **{portafogli[user_id]}**."
+        )
 
 
-# --- COMANDO SLOT CORRETTO MATEMATICAMENTE ---
+# --- COMANDO SLOT CORRETTO SENZA BUG ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -183,95 +302,4 @@ async def slot_machine(ctx, scommessa: str = None):
     if not scommessa.isdigit():
         await ctx.send(
             f"❌ {ctx.author.mention}, inserisci un numero valido di monete!"
-        )
-        ctx.command.reset_cooldown(ctx)
-        return
-
-    cifra = int(scommessa)
-
-    # --- 🤫 EASTER EGG SEGRETO: !slot 67 🤫 ---
-    if cifra == 67:
-        await ctx.send(f"🚪 {ctx.author.mention} **GET OUT**")
-        ctx.command.reset_cooldown(ctx)
-        return
-
-    if cifra <= 0:
-        await ctx.send(
-            f"❌ {ctx.author.mention}, devi scommettere almeno 1 moneta!"
-        )
-        ctx.command.reset_cooldown(ctx)
-        return
-
-    if user_id not in portafogli:
-        portafogli[user_id] = 100
-
-    if portafogli[user_id] < cifra:
-        await ctx.send(
-            f"🚫 {ctx.author.mention}, non hai abbastanza monete! Il tuo saldo attuale è di **{portafogli[user_id]} monete**."
-        )
-        ctx.command.reset_cooldown(ctx)
-        return
-
-    portafogli[user_id] -= cifra
-
-    # Estrazione casuale delle icone
-    riga = [random.choice(EMOJI_SLOT) for _ in range(3)]
-    risultato_visivo = f"**[ {riga[0]} | {riga[1]} | {riga[2]} ]**"
-
-    # --- 💥 CONTROLLO TRIS DI BOMBE CORRETTO ---
-    if riga[0] == "💣" and riga[1] == "💣" and riga[2] == "💣":
-        portafogli[user_id] = 0
-        await ctx.send(
-            f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso, forse è meglio cosi🤔?\n📉 Il tuo portafoglio è stato ridotto a **0 monete**!"
-        )
-        return
-
-    # --- 🏆 CONTROLLO JACKPOT CORRETTO (Adesso funziona solo se sono tutte e tre uguali) ---
-    if riga[0] == riga[1] == riga[2]:
-        vincita = cifra * 10
-        portafogli[user_id] += vincita
-        messaggio = f"🎉 {ctx.author.mention} HA VINTO IL JACKPOT! 🎉\n{risultato_visivo}\n💰 Hai vinto **{vincita} monete**! Nuovo saldo: **{portafogli[user_id]}**."
-    else:
-        messaggio = f"❌ {ctx.author.mention} Hai perso! Ritenta...\n{risultato_visivo}\n📉 Hai perso **{cifra} monete**. Saldo rimasto: **{portafogli[user_id]}**."
-
-    await ctx.send(messaggio)
-
-
-# --- GESTIONE ERRORI AVANZATA ---
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandOnCooldown):
-        secondi_rimasti = int(error.retry_after)
-        ore = secondi_rimasti // 3600
-        minuti = (secondi_rimasti % 3600) // 60
-        secondi = secondi_rimasti % 60
-
-        if ore > 0:
-            tempo_testo = f"{ore} ore, {minuti} minuti e {secondi} secondi"
-        elif minuti > 0:
-            tempo_testo = f"{minuti} minuti e {secondi} secondi"
-        else:
-            tempo_testo = f"{secondi:.1f} secondi"
-
-        await ctx.send(
-            f"⏳ {ctx.author.mention}, devi aspettare ancora **{tempo_testo}** prima di poter riutilizzare questo comando!"
-        )
-
-    elif isinstance(error, commands.NotOwner):
-        await ctx.send(
-            f"🚫 {ctx.author.mention}, ci hai provato! Questo comando può essere usato solo dal mio Creatore."
-        )
-    else:
-        raise error
-
-
-# --- 3. AVVIO ---
-if __name__ == "__main__":
-    keep_alive()
-    token = os.getenv("DISCORD_TOKEN")
-    if token:
-        bot.run(token)
-    else:
-        print(
-            "ERRORE: Non è stata trovata la variabile d'ambiente DISCORD_TOKEN!"
         )
