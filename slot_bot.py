@@ -8,16 +8,13 @@ from flask import Flask
 # --- 1. SERVER WEB INTEGRATO ANTI-LETARGO ---
 app = Flask("")
 
-
 @app.route("/")
 def home():
     return "Casinò Arcade Bot è attivo!"
 
-
 def run():
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
-
 
 def keep_alive():
     t = Thread(target=run)
@@ -37,7 +34,6 @@ bot = commands.Bot(
 
 EMOJI_SLOT = ["🍒", "🍋", "🍇", "🔔", "💎", "7️⃣", "💣"]
 portafogli = {}
-
 
 @bot.event
 async def on_ready():
@@ -69,9 +65,7 @@ async def controlla_soldi(ctx):
     user_id = ctx.author.id
     if user_id not in portafogli:
         portafogli[user_id] = 100
-    await ctx.send(
-        f"💰 {ctx.author.mention}, nel tuo portafoglio ci sono **{portafogli[user_id]} monete**!"
-    )
+    await ctx.send(f"💰 {ctx.author.mention}, nel tuo portafoglio ci sono **{portafogli[user_id]} monete**!")
 
 
 # --- DAILY CONTROLLATO ---
@@ -82,9 +76,7 @@ async def monete_giornaliere(ctx):
     if user_id not in portafogli:
         portafogli[user_id] = 100
     portafogli[user_id] += 50
-    await ctx.send(
-        f"🎁 {ctx.author.mention}, hai riscattato **50 monete gratis**! Nuovo saldo: **{portafogli[user_id]} monete**."
-    )
+    await ctx.send(f"🎁 {ctx.author.mention}, hai riscattato **50 monete gratis**! Nuovo saldo: **{portafogli[user_id]} monete**.")
 
 
 # --- LAVORO CON COOLDOWN (30 MIN) ---
@@ -97,14 +89,10 @@ async def lavora_per_monete(ctx):
     chance = random.randint(1, 100)
     if chance == 77:
         portafogli[user_id] += 10000
-        await ctx.send(
-            f"🍀 {ctx.author.mention} **COLPACCIO!** Bonus incredibile di **10.000 monete**!!! 💰 Saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"🍀 {ctx.author.mention} **COLPACCIO!** Bonus incredibile di **10.000 monete**!!! 💰 Saldo: **{portafogli[user_id]}**.")
     else:
         portafogli[user_id] += 100
-        await ctx.send(
-            f"💼 {ctx.author.mention}, hai guadagnato **100 monete**. Saldo: **{portafogli[user_id]} monete**."
-        )
+        await ctx.send(f"💼 {ctx.author.mention}, hai guadagnato **100 monete**. Saldo: **{portafogli[user_id]} monete**.")
 
 
 # --- CLASSIFICA ORDINATA ---
@@ -113,9 +101,7 @@ async def mostra_classifica(ctx):
     if not portafogli:
         await ctx.send("📊 La classifica è ancora vuota!")
         return
-    classifica_ordinata = sorted(
-        portafogli.items(), key=lambda item: item[1], reverse=True
-    )
+    classifica_ordinata = sorted(portafogli.items(), key=lambda item: item[1], reverse=True)
     testo_classifica = "🏆 **TOP 3 DEI PIÙ RICCHI** 🏆\n\n"
     medaglie = ["🥇", "🥈", "🥉"]
     for i, (user_id, saldo) in enumerate(classifica_ordinata[:3]):
@@ -128,15 +114,13 @@ async def mostra_classifica(ctx):
     await ctx.send(testo_classifica)
 
 
-# --- NUOVO MINIGIOCO: TESTA O CROCE ---
+# --- MINIGIOCO: TESTA O CROCE ---
 @bot.command(name="coinflip")
 @commands.cooldown(1, 3, commands.BucketType.user)
 async def coin_flip(ctx, scelta: str = None, scommessa: str = None):
     user_id = ctx.author.id
     if scelta is None or scommessa is None:
-        await ctx.send(
-            f"❌ Uso corretto: `!coinflip [testa/croce] [scommessa]`"
-        )
+        await ctx.send(f"❌ Uso corretto: `!coinflip [testa/croce] [scommessa]`")
         ctx.command.reset_cooldown(ctx)
         return
     scelta = scelta.lower()
@@ -154,24 +138,18 @@ async def coin_flip(ctx, scelta: str = None, scommessa: str = None):
     risultato = random.choice(["testa", "croce"])
     if scelta == risultato:
         portafogli[user_id] += cifra * 2
-        await ctx.send(
-            f"🪙 **COINFLIP:** È uscito **{risultato.upper()}**! 🎉 {ctx.author.mention} hai raddoppiato! Saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"🪙 **COINFLIP:** È uscito **{risultato.upper()}**! 🎉 {ctx.author.mention} hai raddoppiato! Saldo: **{portafogli[user_id]}**.")
     else:
-        await ctx.send(
-            f"🪙 **COINFLIP:** È uscito **{risultato.upper()}**! ❌ {ctx.author.mention} hai perso. Saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"🪙 **COINFLIP:** È uscito **{risultato.upper()}**! ❌ {ctx.author.mention} hai perso. Saldo: **{portafogli[user_id]}**.")
 
 
-# --- NUOVO MINIGIOCO: CARTA FORBICE SASSO ---
+# --- MINIGIOCO: CARTA FORBICE SASSO ---
 @bot.command(name="rps")
 @commands.cooldown(1, 3, commands.BucketType.user)
 async def rock_paper_scissors(ctx, scelta: str = None, scommessa: str = None):
     user_id = ctx.author.id
     if scelta is None or scommessa is None:
-        await ctx.send(
-            f"❌ Uso corretto: `!rps [sasso/carta/forbice] [scommessa]`"
-        )
+        await ctx.send(f"❌ Uso corretto: `!rps [sasso/carta/forbice] [scommessa]`")
         ctx.command.reset_cooldown(ctx)
         return
     scelta = scelta.lower()
@@ -197,16 +175,12 @@ async def rock_paper_scissors(ctx, scelta: str = None, scommessa: str = None):
         or (scelta == "forbice" and mossa_bot == "carta")
     ):
         portafogli[user_id] += cifra * 2
-        await ctx.send(
-            f"{testo_base}🎉 **HAI VINTO!** Nuovo saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"{testo_base}🎉 **HAI VINTO!** Nuovo saldo: **{portafogli[user_id]}**.")
     else:
-        await ctx.send(
-            f"{testo_base}❌ **HAI PERSO!** Nuovo saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"{testo_base}❌ **HAI PERSO!** Nuovo saldo: **{portafogli[user_id]}**.")
 
 
-# --- COMANDO SLOT ORDINATO E CASUALE ---
+# --- COMANDO SLOT MACHINE ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -232,19 +206,13 @@ async def slot_machine(ctx, scommessa: str = None):
 
     if s1 == "💣" and s2 == "💣" and s3 == "💣":
         portafogli[user_id] = 0
-        await ctx.send(
-            f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso! Il tuo portafoglio è a **0 monete**!"
-        )
+        await ctx.send(f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso! Il tuo portafoglio è a **0 monete**!")
         return
     if s1 == s2 == s3:
         portafogli[user_id] += cifra * 10
-        await ctx.send(
-            f"🎉 **JACKPOT!** {risultato_visivo}\nHai vinto **{cifra*10} monete**! Saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"🎉 **JACKPOT!** {risultato_visivo}\nHai vinto **{cifra*10} monete**! Saldo: **{portafogli[user_id]}**.")
     else:
-        await ctx.send(
-            f"❌ Hai perso! {risultato_visivo}\nHai perso **{cifra} monete**. Saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"❌ Hai perso! {risultato_visivo}\nHai perso **{cifra} monete**. Saldo: **{portafogli[user_id]}**.")
 
 
 # --- 👑 COMANDI RISERVATI ALL'OWNER ---
@@ -252,10 +220,7 @@ async def slot_machine(ctx, scommessa: str = None):
 @commands.is_owner()
 async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
     portafogli[membro.id] = portafogli.get(membro.id, 100) + cifra
-    await ctx.send(
-        f"👑 **OWNER:** Aggiunte **{cifra} monete** a {membro.mention}."
-    )
-
+    await ctx.send(f"👑 **OWNER:** Aggiunte **{cifra} monete** a {membro.mention}.")
 
 @bot.command(name="reset_soldi")
 @commands.is_owner()
@@ -267,6 +232,8 @@ async def resettare_soldi(ctx, membro: discord.Member):
 # --- GESTIONE ERRORI AVANZATA ---
 @bot.event
 async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        return  # Ignora i comandi scritti male senza intasare i log di errori rossi!
     if isinstance(error, commands.CommandOnCooldown):
         sec = int(error.retry_after)
         ore = sec // 3600
@@ -280,9 +247,7 @@ async def on_command_error(ctx, error):
             tempo = f"{secondi} secondi"
         await ctx.send(f"⏳ {ctx.author.mention}, aspetta ancora **{tempo}**!")
     elif isinstance(error, commands.NotOwner):
-        await ctx.send(
-            f"🚫 {ctx.author.mention}, comando riservato al mio Creatore!"
-        )
+        await ctx.send(f"🚫 {ctx.author.mention}, comando riservato al mio Creatore!")
     else:
         raise error
 
