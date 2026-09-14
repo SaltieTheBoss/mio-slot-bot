@@ -44,17 +44,18 @@ async def on_ready():
     print(f"Bot Online! Acceduto come: {bot.user.name}")
 
 
-# --- 📜 MENU DEI COMANDI ---
+# --- 📜 MENU DEI COMANDI AGGIORNATO ---
 @bot.command(name="menu")
 async def mostra_menu(ctx):
     testo_menu = (
-        "🎰 **MENU COMANDI CASINÒ ARCADE** 🎰\n\n"
+        "🎰 **MENU COMANDI CASINÒ ARCANE** 🎰\n\n"
         "🔴 **Comandi generali ed Economia:**\n"
         "• `!menu` - Mostra questa lista.\n"
         "• `!soldi` - Controlla quante monete hai.\n"
         "• `!daily` - Riscatta 50 monete gratis (una volta al giorno).\n"
         "• `!lavora` - Lavora per avere 100 monete (1% di chance di riceverne 10.000!).\n"
-        "• `!classifica` - Mostra la Top 3 del server.\n\n"
+        "• `!classifica` - Mostra la Top 3 del server.\n"
+        "• `!rapina [@utente]` - Tenta un furto (15% successo, 85% vieni multato!).\n\n"
         "🎮 **Minigiochi d'Azzardo:**\n"
         "• `!slot [cifra]` - Gioca alla slot machine (es: `!slot 10`).\n"
         "• `!coinflip [testa/croce] [cifra]` - Testa o croce (es: `!coinflip testa 20`).\n"
@@ -107,6 +108,64 @@ async def lavora_per_monete(ctx):
         )
 
 
+# --- 🥷 COMANDO: RAPINA INVERTITO (85% scoperto, 15% successo) ---
+@bot.command(name="rapina")
+@commands.cooldown(1, 600, commands.BucketType.user)
+async def rapina_utente(ctx, vittima: discord.Member = None):
+    ladro_id = ctx.author.id
+
+    if vittima is None:
+        await ctx.send(
+            f"❌ {ctx.author.mention}, devi taggare qualcuno da rapinare! Es: `!rapina @NomeUtente`"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    vittima_id = vittima.id
+
+    if ladro_id == vittima_id:
+        await ctx.send(
+            f"🧠 {ctx.author.mention}, non puoi rapinare il tuo stesso portafoglio!"
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    if ladro_id not in portafogli:
+        portafogli[ladro_id] = 100
+    if vittima_id not in portafogli:
+        portafogli[vittima_id] = 100
+
+    if portafogli[vittima_id] < 20:
+        await ctx.send(
+            f"🫙 {ctx.author.mention}, {vittima.mention} è troppo povero per essere rapinato! Lascialo in pace."
+        )
+        ctx.command.reset_cooldown(ctx)
+        return
+
+    chance = random.randint(1, 100)
+
+    if chance <= 85:
+        multa = 100
+        portafogli[ladro_id] -= multa
+        portafogli[vittima_id] += multa
+        await ctx.send(
+            f"🚨 **POLIZIA!** {ctx.author.mention} è stato scoperto a rubare nel portafoglio di {vittima.mention}!\n"
+            f"👮‍♂️ Sei stato beccato in pieno e multato di **100 monete**, date direttamente alla vittima!\n"
+            f"💰 Tuo Saldo: **{portafogli[ladro_id]}** | Saldo Vittima: **{portafogli[vittima_id]}**."
+        )
+    else:
+        massimo_rubabile = min(150, portafogli[vittima_id])
+        bottino = random.randint(20, massimo_rubabile)
+
+        portafogli[vittima_id] -= bottino
+        portafogli[ladro_id] += bottino
+        await ctx.send(
+            f"🥷 **FURTO RIUSCITO!** {ctx.author.mention} ha completato un colpo leggendario ai danni di {vittima.mention}!\n"
+            f"💸 Sei sfuggito alla polizia e gli hai sottratto ben **{bottino} monete**!\n"
+            f"💰 Tuo Saldo: **{portafogli[ladro_id]}** | Saldo Vittima: **{portafogli[vittima_id]}**."
+        )
+
+
 # --- CLASSIFICA ORDINATA ---
 @bot.command(name="classifica")
 async def mostra_classifica(ctx):
@@ -152,7 +211,7 @@ async def coin_flip(ctx, scelta: str = None, scommessa: str = None):
         return
     portafogli[user_id] = portafogli.get(user_id, 100) - cifra
     risultato = random.choice(["testa", "croce"])
-    if scelta == risultato:  # 🛠️ CORRETTO QUI!
+    if scelta == risultato:
         portafogli[user_id] += cifra * 2
         await ctx.send(
             f"🪙 **COINFLIP:** È uscito **{risultato.upper()}**! 🎉 {ctx.author.mention} hai raddoppiato! Saldo: **{portafogli[user_id]}**."
@@ -206,7 +265,6 @@ async def rock_paper_scissors(ctx, scelta: str = None, scommessa: str = None):
         )
 
 
-# --- COMANDO SLOT ORDINATO E CASUALE ---
 @bot.command(name="slot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def slot_machine(ctx, scommessa: str = None):
@@ -232,19 +290,13 @@ async def slot_machine(ctx, scommessa: str = None):
 
     if s1 == "💣" and s2 == "💣" and s3 == "💣":
         portafogli[user_id] = 0
-        await ctx.send(
-            f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso! Il tuo portafoglio è a **0 monete**!"
-        )
+        await ctx.send(f"{risultato_visivo}\n💥 {ctx.author.mention} è esploso! Il tuo portafoglio è a **0 monete**!")
         return
     if s1 == s2 == s3:
         portafogli[user_id] += cifra * 10
-        await ctx.send(
-            f"🎉 **JACKPOT!** {risultato_visivo}\nHai vinto **{cifra*10} monete**! Saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"🎉 **JACKPOT!** {risultato_visivo}\nHai vinto **{cifra*10} monete**! Saldo: **{portafogli[user_id]}**.")
     else:
-        await ctx.send(
-            f"❌ Hai perso! {risultato_visivo}\nHai perso **{cifra} monete**. Saldo: **{portafogli[user_id]}**."
-        )
+        await ctx.send(f"❌ Hai perso! {risultato_visivo}\nHai perso **{cifra} monete**. Saldo: **{portafogli[user_id]}**.")
 
 
 # --- 👑 COMANDI RISERVATI ALL'OWNER ---
@@ -252,9 +304,7 @@ async def slot_machine(ctx, scommessa: str = None):
 @commands.is_owner()
 async def aggiungi_soldi(ctx, membro: discord.Member, cifra: int):
     portafogli[membro.id] = portafogli.get(membro.id, 100) + cifra
-    await ctx.send(
-        f"👑 **OWNER:** Aggiunte **{cifra} monete** a {membro.mention}."
-    )
+    await ctx.send(f"👑 **OWNER:** Aggiunte **{cifra} monete** a {membro.mention}.")
 
 
 @bot.command(name="reset_soldi")
@@ -282,9 +332,7 @@ async def on_command_error(ctx, error):
             tempo = f"{secondi} secondi"
         await ctx.send(f"⏳ {ctx.author.mention}, aspetta ancora **{tempo}**!")
     elif isinstance(error, commands.NotOwner):
-        await ctx.send(
-            f"🚫 {ctx.author.mention}, comando riservato al mio Creatore!"
-        )
+        await ctx.send(f"🚫 {ctx.author.mention}, comando riservato al mio Creatore!")
     else:
         raise error
 
