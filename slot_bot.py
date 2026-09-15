@@ -27,6 +27,14 @@ def keep_alive():
 # --- 2. CONFIGURAZIONE BOT DISCORD ---
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True  # <--- AGGIUNTO: Permette al bot di vedere chi entra nel server
+
+# === 🛡️ CONFIGURAZIONE DELLA WHITELIST ===
+# Sostituisci il numero sotto con il tuo ID Discord numerico reale (e dei tuoi amici)
+WHITELIST = [
+    1496572992426082556, 
+]
+# =========================================
 
 bot = commands.Bot(
     command_prefix="!",
@@ -42,6 +50,26 @@ portafogli = {}
 @bot.event
 async def on_ready():
     print(f"Bot Online! Acceduto come: {bot.user.name}")
+    print("🛡️ Sistema di whitelist attivo e funzionante.")
+
+
+# === 🛑 CONTROLLO E BAN AUTOMATICO ALL'INGRESSO ===
+@bot.event
+async def on_member_join(member):
+    # Se l'utente che entra NON è inserito nella lista WHITELIST
+    if member.id not in WHITELIST:
+        try:
+            # Tenta di avvisarlo in chat privata
+            await member.send("Non sei nella whitelist di questo server. Sei stato bannato.")
+        except Exception:
+            pass  # Se ha i messaggi privati bloccati, va avanti comunque
+        
+        # Esegue il ban definitivo dal server
+        await member.ban(reason="Non presente nella whitelist.")
+        print(f"🛑 Utente bannato automaticamente: {member.name} (ID: {member.id})")
+    else:
+        print(f"🟢 Utente autorizzato entrato nel server: {member.name}")
+# ==================================================
 
 
 # --- 📜 MENU DEI COMANDI AGGIORNATO ---
